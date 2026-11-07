@@ -1,0 +1,485 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Python Tutor AI</title>
+<style>
+:root{
+  --navy:#14213d; --navy2:#1c2e52; --gold:#c9a24b; --ivory:#f7f3e8; --greyblue:#8fa3bf; --card:#22355e; --code:#0e1830;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Segoe UI",system-ui,sans-serif;background:var(--navy);color:var(--ivory);height:100vh;height:100dvh;display:flex;overflow:hidden}
+aside{width:270px;background:#0f1a33;border-right:1px solid #2b3d66;padding:18px;display:flex;flex-direction:column;gap:14px;overflow-y:auto}
+.brand{display:flex;align-items:center;gap:10px}
+.logo{width:42px;height:42px;border-radius:12px;background:linear-gradient(135deg,var(--gold),#e6c777);color:var(--navy);display:grid;place-items:center;font-weight:800;font-size:20px}
+.brand h1{font-size:18px;color:var(--gold)} .brand small{color:var(--greyblue);font-size:12px}
+aside h3{font-size:12px;letter-spacing:.08em;text-transform:uppercase;color:var(--greyblue);margin-top:6px}
+.chip{background:var(--navy2);border:1px solid #2f4575;color:var(--ivory);padding:9px 12px;border-radius:10px;cursor:pointer;text-align:left;font-size:13.5px;transition:.15s}
+.chip:hover{border-color:var(--gold);transform:translateX(2px)}
+main{flex:1;display:flex;flex-direction:column;min-width:0}
+header{padding:14px 20px;border-bottom:1px solid #2b3d66;display:flex;align-items:center;gap:12px;background:var(--navy)}
+header .menu{display:none;background:none;border:none;color:var(--gold);font-size:24px;cursor:pointer}
+header .t{flex:1} header .t b{color:var(--gold)} header .t span{display:block;font-size:12px;color:var(--greyblue)}
+.clear{background:none;border:1px solid #2f4575;color:var(--greyblue);padding:6px 12px;border-radius:8px;cursor:pointer}
+.clear:hover{color:var(--gold);border-color:var(--gold)}
+#chat{flex:1;overflow-y:auto;padding:22px 20px;display:flex;flex-direction:column;gap:16px;scroll-behavior:smooth}
+.msg{max-width:min(760px,92%);padding:14px 16px;border-radius:16px;line-height:1.6;font-size:15px;animation:in .25s ease}
+@keyframes in{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.bot{background:var(--card);align-self:flex-start;border-top-left-radius:4px;border:1px solid #2f4575}
+.user{background:var(--gold);color:var(--navy);align-self:flex-end;border-top-right-radius:4px;font-weight:500}
+.msg h4{color:var(--gold);margin-bottom:6px}
+.msg p{margin:6px 0} .msg ul,.msg ol{margin:6px 0 6px 20px}
+.msg code.i{background:var(--code);padding:1px 6px;border-radius:5px;color:#ffd98a;font-family:Consolas,monospace;font-size:13.5px}
+.codebox{background:var(--code);border:1px solid #2f4575;border-radius:10px;margin:10px 0;overflow:hidden}
+.codebox .bar{display:flex;justify-content:space-between;align-items:center;padding:6px 12px;background:#14234a;font-size:12px;color:var(--greyblue)}
+.codebox button{background:none;border:1px solid #3a5088;color:var(--ivory);border-radius:6px;padding:2px 9px;cursor:pointer;font-size:12px;margin-left:6px}
+.codebox button:hover{border-color:var(--gold);color:var(--gold)}
+.codebox pre{padding:12px 14px;overflow-x:auto;font-family:Consolas,monospace;font-size:13.5px;line-height:1.55;color:#e8e2cf}
+.out{border-top:1px dashed #3a5088;padding:10px 14px;color:#9fe0b0;font-family:Consolas,monospace;font-size:13px;white-space:pre-wrap}
+.opts{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+.opt{background:var(--navy2);border:1px solid #3a5088;color:var(--ivory);padding:8px 12px;border-radius:9px;cursor:pointer;font-size:14px}
+.opt:hover{border-color:var(--gold)} .opt.ok{background:#1f5a3a;border-color:#4cc98a} .opt.bad{background:#5a2330;border-color:#e0707f}
+.typing span{display:inline-block;width:7px;height:7px;margin:0 2px;border-radius:50%;background:var(--greyblue);animation:b 1s infinite}
+.typing span:nth-child(2){animation-delay:.15s}.typing span:nth-child(3){animation-delay:.3s}
+@keyframes b{0%,80%,100%{transform:translateY(0)}40%{transform:translateY(-6px)}}
+#form{display:flex;gap:10px;padding:14px 20px;padding-bottom:max(14px,env(safe-area-inset-bottom));border-top:1px solid #2b3d66;background:#0f1a33}
+textarea{flex:1;resize:none;background:var(--navy2);border:1px solid #2f4575;border-radius:12px;color:var(--ivory);padding:12px 14px;font:inherit;font-size:15px;max-height:140px;outline:none}
+textarea:focus{border-color:var(--gold)}
+#form button{background:var(--gold);color:var(--navy);border:none;border-radius:12px;padding:0 22px;font-weight:700;cursor:pointer}
+#form button:hover{filter:brightness(1.08)}
+@media(max-width:780px){
+  textarea{font-size:16px}
+  #chat{padding:16px 12px}
+  #form{padding:10px 12px;padding-bottom:max(10px,env(safe-area-inset-bottom))}
+  header{padding:10px 12px}
+  .msg{max-width:96%;font-size:14.5px}
+  .codebox pre{font-size:12.5px}
+  aside{position:fixed;left:-290px;top:0;bottom:0;z-index:10;transition:.25s}
+  aside.open{left:0;box-shadow:0 0 0 100vmax rgba(0,0,0,.55)}
+  header .menu{display:block}
+}
+</style>
+</head>
+<body>
+<aside id="side">
+  <div class="brand"><div class="logo">Py</div><div><h1>Python Tutor AI</h1><small>Learn Python step by step</small></div></div>
+  <h3>Learn</h3>
+  <button class="chip" data-q="Explain variables">Variables &amp; Data Types</button>
+  <button class="chip" data-q="Explain if else">If / Else</button>
+  <button class="chip" data-q="Explain loops">Loops (for &amp; while)</button>
+  <button class="chip" data-q="Explain functions">Functions</button>
+  <button class="chip" data-q="Explain lists">Lists</button>
+  <button class="chip" data-q="Explain dictionaries">Dictionaries</button>
+  <button class="chip" data-q="Explain strings">Strings</button>
+  <button class="chip" data-q="Explain classes">Classes &amp; OOP</button>
+  <button class="chip" data-q="Explain file handling">File Handling</button>
+  <button class="chip" data-q="Explain exceptions">Error Handling</button>
+  <h3>Intermediate</h3>
+  <button class="chip" data-q="Explain comprehensions">Comprehensions</button>
+  <button class="chip" data-q="Explain lambda map filter">Lambda, map &amp; filter</button>
+  <button class="chip" data-q="Explain args kwargs">*args &amp; **kwargs</button>
+  <button class="chip" data-q="Explain sets and tuples">Sets &amp; Tuples</button>
+  <button class="chip" data-q="Explain sorting">Sorting &amp; Searching</button>
+  <button class="chip" data-q="Explain scope">Variable Scope</button>
+  <button class="chip" data-q="Explain recursion">Recursion</button>
+  <button class="chip" data-q="Explain inheritance">Inheritance</button>
+  <button class="chip" data-q="Explain decorators">Decorators</button>
+  <button class="chip" data-q="Explain generators">Generators</button>
+  <button class="chip" data-q="Explain modules and pip">Modules &amp; pip</button>
+  <button class="chip" data-q="Explain json">JSON</button>
+  <button class="chip" data-q="Explain regex">Regular Expressions</button>
+  <button class="chip" data-q="Explain datetime">Dates &amp; Time</button>
+  <h3>Data Science</h3>
+  <button class="chip" data-q="Explain numpy">NumPy</button>
+  <button class="chip" data-q="Explain pandas">Pandas</button>
+  <button class="chip" data-q="Explain matplotlib">Matplotlib</button>
+  <h3>Practice</h3>
+  <button class="chip" data-q="Give me a quiz">Take a Quiz</button>
+  <button class="chip" data-q="Give me a practice problem">Practice Problem</button>
+  <button class="chip" data-q="Study plan">Study Plan</button>
+  <button class="chip" data-q="Common errors">Common Errors</button>
+</aside>
+<main>
+  <header>
+    <button class="menu" id="menu">☰</button>
+    <div class="t"><b>Python Tutor AI</b><span>Ask a concept, paste code to explain, or request a quiz</span></div>
+    <button class="clear" id="clear">Clear</button>
+  </header>
+  <div id="chat"></div>
+  <div id="form">
+    <textarea id="input" rows="1" placeholder="Ask about Python…"></textarea>
+    <button type="button" id="send">Send</button>
+  </div>
+</main>
+
+<script>
+/* ===================== KNOWLEDGE BASE ===================== */
+const esc = s => s.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
+const code = (c,out) => ({code:c,out});
+
+const TOPICS = {
+ variables:{
+  keys:["variable","data type","datatype","int","float","type()","assignment"],
+  title:"Variables & Data Types",
+  text:"A <b>variable</b> is a name that stores a value. Python figures out the type automatically (dynamic typing). Common types: <code class='i'>int</code>, <code class='i'>float</code>, <code class='i'>str</code>, <code class='i'>bool</code>.",
+  ex:code(`name = "Sania"\nage = 20\ngpa = 3.8\nis_student = True\n\nprint(name, age, gpa, is_student)\nprint(type(age))`,"Sania 20 3.8 True\n<class 'int'>"),
+  tips:["Names are case-sensitive: <code class='i'>Age</code> ≠ <code class='i'>age</code>.","Use snake_case: <code class='i'>my_score</code>.","Convert types with <code class='i'>int()</code>, <code class='i'>float()</code>, <code class='i'>str()</code>."]},
+ ifelse:{
+  keys:["if","else","elif","condition","conditional","decision"],
+  title:"If / Elif / Else",
+  text:"Conditionals let your program choose a path. Python uses <b>indentation</b> (4 spaces) to mark the block.",
+  ex:code(`marks = 72\nif marks >= 85:\n    print("A")\nelif marks >= 70:\n    print("B")\nelse:\n    print("Keep going!")`,"B"),
+  tips:["Comparison: <code class='i'>== != &lt; &gt; &lt;= &gt;=</code>","Combine with <code class='i'>and</code>, <code class='i'>or</code>, <code class='i'>not</code>.","Don't forget the colon <code class='i'>:</code> after the condition."]},
+ loops:{
+  keys:["loop","for","while","range","iterate","iteration","break","continue"],
+  title:"Loops",
+  text:"<b>for</b> loops repeat over a sequence; <b>while</b> loops repeat while a condition is true.",
+  ex:code(`for i in range(1, 4):\n    print("Square of", i, "is", i*i)\n\ncount = 3\nwhile count > 0:\n    print(count)\n    count -= 1`,"Square of 1 is 1\nSquare of 2 is 4\nSquare of 3 is 9\n3\n2\n1"),
+  tips:["<code class='i'>range(a, b)</code> stops <i>before</i> b.","<code class='i'>break</code> exits a loop; <code class='i'>continue</code> skips to the next round.","A while loop whose condition never becomes False runs forever."]},
+ functions:{
+  keys:["function","def","return","parameter","argument"],
+  title:"Functions",
+  text:"A <b>function</b> is reusable code. Define it with <code class='i'>def</code>, give it parameters, and send a result back with <code class='i'>return</code>.",
+  ex:code(`def area(length, width=1):\n    return length * width\n\nprint(area(5, 4))\nprint(area(7))\n\nsquare = lambda x: x ** 2\nprint(square(6))`,"20\n7\n36"),
+  tips:["<code class='i'>print</code> shows a value; <code class='i'>return</code> hands it back.","Default values (<code class='i'>width=1</code>) make arguments optional.","Variables created inside a function are local to it."]},
+ lists:{
+  keys:["list","append","slice","slicing"],
+  title:"Lists",
+  text:"A <b>list</b> stores an ordered, changeable collection. Indexing starts at 0.",
+  ex:code(`nums = [5, 2, 9]\nnums.append(1)\nnums.sort()\nprint(nums)\nprint(nums[0], nums[-1])\nprint(nums[1:3])\nprint([n*2 for n in nums])`,"[1, 2, 5, 9]\n1 9\n[2, 5]\n[2, 4, 10, 18]"),
+  tips:["<code class='i'>len(list)</code> gives its size.","<b>Tuples</b> <code class='i'>(1,2)</code> are like lists but cannot change.","<b>Sets</b> <code class='i'>{1,2}</code> hold unique items only.","The last line above is a <i>list comprehension</i>."]},
+ dicts:{
+  keys:["dictionary","dictionaries","dict","key","value","hash"],
+  title:"Dictionaries",
+  text:"A <b>dictionary</b> stores <i>key → value</i> pairs, great for labelled data.",
+  ex:code(`student = {"name": "Sania", "marks": 88}\nstudent["city"] = "Multan"\nprint(student["name"])\nprint(student.get("age", "unknown"))\nfor k, v in student.items():\n    print(k, "=", v)`,"Sania\nunknown\nname = Sania\nmarks = 88\ncity = Multan"),
+  tips:["Use <code class='i'>.get(key, default)</code> to avoid KeyError.","Keys must be unique and immutable (str, int, tuple)."]},
+ strings:{
+  keys:["string","str","upper","lower","split","join","format","f-string","fstring"],
+  title:"Strings",
+  text:"Strings are text in quotes. Use <b>f-strings</b> to put variables inside text.",
+  ex:code(`s = "  Python is fun  "\nprint(s.strip().upper())\nprint(s.split())\nname, n = "Ali", 3\nprint(f"{name} scored {n*10} points")\nprint("-".join(["a","b","c"]))`,"PYTHON IS FUN\n['Python', 'is', 'fun']\nAli scored 30 points\na-b-c"),
+  tips:["Strings are immutable: methods return a <i>new</i> string.","Slicing works too: <code class='i'>\"Python\"[0:3]</code> → <code class='i'>Pyt</code>."]},
+ classes:{
+  keys:["class","classes","object","oop","init","self","method","constructor"],
+  title:"Classes & OOP",
+  text:"A <b>class</b> is a blueprint; an <b>object</b> is one thing built from it. <code class='i'>__init__</code> runs when an object is created, and <code class='i'>self</code> refers to that object.",
+  ex:code(`class Student:\n    def __init__(self, name):\n        self.name = name\n        self.marks = []\n\n    def add(self, m):\n        self.marks.append(m)\n\n    def average(self):\n        return sum(self.marks) / len(self.marks)\n\ns = Student("Sania")\ns.add(80); s.add(90)\nprint(s.average())`,"85.0"),
+  tips:["Inheritance: <code class='i'>class Child(Parent):</code>","Every method's first parameter is <code class='i'>self</code>."]},
+ files:{
+  keys:["file","open","read","write","with open","txt"],
+  title:"File Handling",
+  text:"Use <code class='i'>with open()</code> so the file closes automatically. Modes: <code class='i'>'r'</code> read, <code class='i'>'w'</code> write (overwrites), <code class='i'>'a'</code> append.",
+  ex:code(`with open("notes.txt", "w") as f:\n    f.write("Hello file!\\n")\n\nwith open("notes.txt") as f:\n    for line in f:\n        print(line.strip())`,"Hello file!"),
+  tips:["<code class='i'>FileNotFoundError</code> means the path is wrong.","Use <code class='i'>'w'</code> carefully — it erases existing content."]},
+ exceptions:{
+  keys:["exception","exceptions","error handling","try","except","finally","raise","traceback"],
+  title:"Error Handling",
+  text:"<code class='i'>try / except</code> lets your program handle errors instead of crashing.",
+  ex:code(`try:\n    n = int(input("Number: "))\n    print(10 / n)\nexcept ZeroDivisionError:\n    print("Can't divide by zero")\nexcept ValueError:\n    print("Please type digits")\nfinally:\n    print("Done")`,"(if you type 0)\nCan't divide by zero\nDone"),
+  tips:["Catch specific errors, not everything.","<code class='i'>finally</code> always runs."]},
+
+ /* ---------- Intermediate ---------- */
+ comprehensions:{
+  keys:["comprehension","comprehensions","list comprehension","dict comprehension","one line loop"],
+  title:"Comprehensions",
+  text:"A <b>comprehension</b> builds a list, dictionary or set in one short line. Pattern: <code class='i'>[expression for item in sequence if condition]</code>.",
+  ex:code(`squares = [x*x for x in range(5)]\nevens = [x for x in range(10) if x % 2 == 0]\nlengths = {w: len(w) for w in ["hi", "python"]}\nremainders = {x % 3 for x in range(10)}\n\nprint(squares)\nprint(evens)\nprint(lengths)\nprint(remainders)`,"[0, 1, 4, 9, 16]\n[0, 2, 4, 6, 8]\n{'hi': 2, 'python': 6}\n{0, 1, 2}"),
+  tips:["Square brackets → list, curly with <code class='i'>key: value</code> → dict, curly without → set.","If it gets long or confusing, use a normal loop instead."]},
+ lambdamap:{
+  keys:["lambda","map","filter","reduce","higher order","anonymous function"],
+  title:"Lambda, map() & filter()",
+  text:"A <b>lambda</b> is a tiny one-line function with no name. <code class='i'>map()</code> applies a function to every item; <code class='i'>filter()</code> keeps only items that pass a test.",
+  ex:code(`nums = [1, 2, 3, 4, 5]\nsquares = list(map(lambda x: x ** 2, nums))\nevens = list(filter(lambda x: x % 2 == 0, nums))\nwords = sorted(["bb", "a", "ccc"], key=len)\n\nprint(squares)\nprint(evens)\nprint(words)`,"[1, 4, 9, 16, 25]\n[2, 4]\n['a', 'bb', 'ccc']"),
+  tips:["Syntax: <code class='i'>lambda arguments: expression</code>.","<code class='i'>map</code> and <code class='i'>filter</code> return iterators, so wrap them in <code class='i'>list()</code> to see the result.","Comprehensions often read more clearly than map/filter."]},
+ argskwargs:{
+  keys:["args","kwargs","*args","**kwargs","variable arguments","keyword arguments","unpacking"],
+  title:"*args and **kwargs",
+  text:"<code class='i'>*args</code> collects any number of positional arguments into a tuple. <code class='i'>**kwargs</code> collects named arguments into a dictionary.",
+  ex:code(`def total(*nums):\n    return sum(nums)\n\ndef info(**details):\n    for key, value in details.items():\n        print(key, value)\n\nprint(total(1, 2, 3))\ninfo(name="Ali", age=20)`,"6\nname Ali\nage 20"),
+  tips:["The names <code class='i'>args</code>/<code class='i'>kwargs</code> are convention; the stars are what matter.","Order in a definition: normal parameters, <code class='i'>*args</code>, then <code class='i'>**kwargs</code>."]},
+ setstuples:{
+  keys:["set","sets","tuple","tuples","union","intersection","immutable","unique"],
+  title:"Sets & Tuples",
+  text:"A <b>set</b> holds unique items with no order and is great for removing duplicates and comparing groups. A <b>tuple</b> is like a list that cannot be changed.",
+  ex:code(`s = {1, 2, 2, 3}\na = {1, 2, 3}\nb = {2, 3, 4}\nprint(s)\nprint(a & b)\nprint(a | b)\nprint(a - b)\n\nt = (10, 20)\nx, y = t\nprint(x, y)`,"{1, 2, 3}\n{2, 3}\n{1, 2, 3, 4}\n{1}\n10 20"),
+  tips:["<code class='i'>&amp;</code> intersection, <code class='i'>|</code> union, <code class='i'>-</code> difference.","Remove duplicates from a list: <code class='i'>list(set(my_list))</code> (order may change).","An empty set is <code class='i'>set()</code>, not <code class='i'>{}</code> (that is a dict)."]},
+ sorting:{
+  keys:["sort","sorted","sorting","order","ascending","descending","binary search","searching"],
+  title:"Sorting & Searching",
+  text:"<code class='i'>sorted()</code> returns a new sorted list; <code class='i'>.sort()</code> sorts the list in place. Use <code class='i'>key=</code> to choose what to sort by.",
+  ex:code(`nums = [5, 2, 9]\nprint(sorted(nums))\nnums.sort(reverse=True)\nprint(nums)\n\nstudents = [("Ali", 80), ("Sara", 92)]\nprint(sorted(students, key=lambda s: s[1], reverse=True))\n\nprint(9 in nums)`,"[2, 5, 9]\n[9, 5, 2]\n[('Sara', 92), ('Ali', 80)]\nTrue"),
+  tips:["<code class='i'>in</code> checks membership (linear search).","On a <i>sorted</i> list, binary search is much faster: check the middle and discard half each time.","The <code class='i'>bisect</code> module provides binary search."]},
+ scope:{
+  keys:["scope","global","local","legb","nonlocal","global variable","local variable"],
+  title:"Variable Scope",
+  text:"Scope decides where a variable can be seen. Python looks in this order: <b>L</b>ocal → <b>E</b>nclosing → <b>G</b>lobal → <b>B</b>uilt-in (LEGB).",
+  ex:code(`x = 10\n\ndef f():\n    x = 5\n    print("inside:", x)\n\nf()\nprint("outside:", x)`,"inside: 5\noutside: 10"),
+  tips:["Assigning inside a function creates a new local variable.","Use <code class='i'>global x</code> to change a global (use sparingly).","Prefer passing values in and returning results."]},
+ recursion:{
+  keys:["recursion","recursive","recurse","base case"],
+  title:"Recursion",
+  text:"A <b>recursive</b> function calls itself on a smaller version of the problem. It needs a <b>base case</b> that stops the calls.",
+  ex:code(`def factorial(n):\n    if n <= 1:          # base case\n        return 1\n    return n * factorial(n - 1)\n\ndef fib(n):\n    if n < 2:\n        return n\n    return fib(n - 1) + fib(n - 2)\n\nprint(factorial(5))\nprint([fib(i) for i in range(8)])`,"120\n[0, 1, 1, 2, 3, 5, 8, 13]"),
+  tips:["No base case → <code class='i'>RecursionError</code> (too many calls).","Plain <code class='i'>fib</code> is slow for big n; caching with <code class='i'>functools.lru_cache</code> fixes it.","Many recursive problems can also be written with a loop."]},
+ inheritance:{
+  keys:["inheritance","inherit","super","polymorphism","overriding","override","parent class","child class"],
+  title:"Inheritance & Polymorphism",
+  text:"A <b>child class</b> reuses everything from a <b>parent class</b> and can override methods. Different classes responding to the same method name is <b>polymorphism</b>.",
+  ex:code(`class Animal:\n    def __init__(self, name):\n        self.name = name\n    def speak(self):\n        return "..."\n\nclass Dog(Animal):\n    def speak(self):\n        return "Woof"\n\nclass Cat(Animal):\n    def speak(self):\n        return "Meow"\n\nfor a in [Animal("Generic"), Dog("Rex"), Cat("Tom")]:\n    print(a.name, a.speak())`,"Generic ...\nRex Woof\nTom Meow"),
+  tips:["<code class='i'>super().__init__(...)</code> calls the parent's constructor.","Child classes inherit all parent methods automatically."]},
+ decorators:{
+  keys:["decorator","decorators","@","wrapper","closure"],
+  title:"Decorators",
+  text:"A <b>decorator</b> wraps a function to add behaviour before or after it runs, without changing the function itself. You apply it with <code class='i'>@name</code> above the function.",
+  ex:code(`def shout(func):\n    def wrapper():\n        print("Before")\n        func()\n        print("After")\n    return wrapper\n\n@shout\ndef hi():\n    print("Hi!")\n\nhi()`,"Before\nHi!\nAfter"),
+  tips:["<code class='i'>@shout</code> is shorthand for <code class='i'>hi = shout(hi)</code>.","Real uses: timing, logging, login checks.","Use <code class='i'>functools.wraps</code> to keep the original function's name."]},
+ generators:{
+  keys:["generator","generators","yield","iterator","iterators","lazy"],
+  title:"Generators",
+  text:"A <b>generator</b> produces values one at a time using <code class='i'>yield</code> instead of building a whole list, saving memory.",
+  ex:code(`def count_up(n):\n    i = 1\n    while i <= n:\n        yield i\n        i += 1\n\nfor x in count_up(3):\n    print(x)\n\nprint(sum(x * x for x in range(4)))`,"1\n2\n3\n14"),
+  tips:["A generator can be used only once.","<code class='i'>(x*x for x in data)</code> with round brackets is a generator expression."]},
+ modules:{
+  keys:["module","modules","import","pip","package","library","libraries","math","random","os"],
+  title:"Modules, Libraries & pip",
+  text:"A <b>module</b> is a file of ready-made code. Use <code class='i'>import</code> to bring it in. Python ships with many (<code class='i'>math</code>, <code class='i'>random</code>, <code class='i'>os</code>, <code class='i'>datetime</code>). Extra libraries are installed with <b>pip</b> in the terminal.",
+  ex:code(`import math\nfrom random import randint\n\nprint(math.sqrt(16))\nprint(round(math.pi, 2))\nn = randint(1, 6)\nprint(1 <= n <= 6)\n\n# terminal:  pip install numpy pandas matplotlib`,"4.0\n3.14\nTrue"),
+  tips:["<code class='i'>import x as y</code> gives it a short name (like <code class='i'>import numpy as np</code>).","Your own <code class='i'>.py</code> file can be imported too.","Don't name your file the same as a library (e.g. <code class='i'>random.py</code>)."]},
+ jsonmod:{
+  keys:["json","json file","dumps","loads","serialize","api data"],
+  title:"JSON",
+  text:"<b>JSON</b> is a text format for exchanging data. Python's <code class='i'>json</code> module converts between dictionaries/lists and JSON text.",
+  ex:code(`import json\n\ndata = {"name": "Sania", "marks": [80, 90]}\ntext = json.dumps(data)\nprint(text)\n\nback = json.loads(text)\nprint(back["marks"][1])`,"{\"name\": \"Sania\", \"marks\": [80, 90]}\n90"),
+  tips:["<code class='i'>dumps</code>/<code class='i'>loads</code> work with strings; <code class='i'>dump</code>/<code class='i'>load</code> work with files.","JSON uses double quotes only."]},
+ regex:{
+  keys:["regex","regular expression","regular expressions","re module","pattern matching","findall"],
+  title:"Regular Expressions (re)",
+  text:"A <b>regular expression</b> describes a text pattern. The <code class='i'>re</code> module finds, checks and replaces text that fits it.",
+  ex:code(`import re\n\ntext = "Call 0300-1234567 or 0321-7654321"\nprint(re.findall(r"\\d{4}-\\d{7}", text))\nprint(bool(re.match(r"^\\w+@\\w+\\.com$", "a@b.com")))`,"['0300-1234567', '0321-7654321']\nTrue"),
+  tips:["<code class='i'>\\d</code> digit, <code class='i'>\\w</code> letter/digit/_, <code class='i'>.</code> any char, <code class='i'>+</code> one or more, <code class='i'>{4}</code> exactly 4.","Write patterns as raw strings: <code class='i'>r\"...\"</code>.","<code class='i'>re.sub(pattern, new, text)</code> replaces matches."]},
+ datetimemod:{
+  keys:["datetime","date","time","strftime","timedelta","calendar"],
+  title:"Dates & Time",
+  text:"The <code class='i'>datetime</code> module handles dates, times and the difference between them.",
+  ex:code(`from datetime import date\n\nd = date(2026, 11, 7)\nprint(d.strftime("%d %B %Y"))\nprint(d.weekday())\nprint((date(2026, 12, 25) - d).days)`,"07 November 2026\n5\n48"),
+  tips:["<code class='i'>weekday()</code>: Monday = 0 … Sunday = 6.","<code class='i'>%d</code> day, <code class='i'>%m</code> month number, <code class='i'>%B</code> month name, <code class='i'>%Y</code> year.","<code class='i'>date.today()</code> / <code class='i'>datetime.now()</code> give the current moment."]},
+
+ /* ---------- Data Science ---------- */
+ numpy:{
+  keys:["numpy","np","ndarray","array","arrays","arange","linspace","reshape","broadcasting","vectorization","matrix","matrices"],
+  title:"NumPy",
+  text:"<b>NumPy</b> is the core library for fast numerical work. Its main object is the <code class='i'>ndarray</code>, an array that does maths on all elements at once (<b>vectorization</b>) with no loops. Install: <code class='i'>pip install numpy</code>.",
+  ex:code(`import numpy as np\n\na = np.array([1, 2, 3, 4])\nprint(a * 2)\nprint(a.mean(), a.sum())\nprint(a[a > 2])\n\nm = np.arange(6).reshape(2, 3)\nprint(m)\nprint(m.shape)\nprint(np.linspace(0, 1, 5))`,"[2 4 6 8]\n2.5 10\n[3 4]\n[[0 1 2]\n [3 4 5]]\n(2, 3)\n[0.   0.25 0.5  0.75 1.  ]"),
+  tips:["Unlike lists, <code class='i'>a * 2</code> multiplies every element, it doesn't repeat the array.","<code class='i'>a[a &gt; 2]</code> is <b>boolean indexing</b>: it keeps elements where the test is True.","Useful: <code class='i'>np.zeros</code>, <code class='i'>np.ones</code>, <code class='i'>np.random.rand</code>, <code class='i'>np.dot</code> (matrix product), <code class='i'>m.T</code> (transpose), <code class='i'>np.linalg.inv</code> (inverse).","<b>Broadcasting</b> lets arrays of different shapes work together, e.g. adding a single number to a matrix.","Great for Mathematics students: linear algebra, statistics and numerical methods."]},
+ pandas:{
+  keys:["pandas","dataframe","dataframes","series","read_csv","csv","groupby","df","data analysis","data cleaning","excel"],
+  title:"Pandas",
+  text:"<b>Pandas</b> is for working with table-like data (like Excel in code). Its main object is the <b>DataFrame</b>: rows, columns and labels. Install: <code class='i'>pip install pandas</code>.",
+  ex:code(`import pandas as pd\n\ndf = pd.DataFrame({\n    "name": ["Ali", "Sara", "Hina"],\n    "marks": [78, 92, 85]\n})\n\nprint(df)\nprint(df.shape)\nprint(df["marks"].mean())\nprint(df[df["marks"] > 80])\nprint(df.sort_values("marks", ascending=False).head(1))`,"   name  marks\n0   Ali     78\n1  Sara     92\n2  Hina     85\n(3, 2)\n85.0\n   name  marks\n1  Sara     92\n2  Hina     85\n   name  marks\n1  Sara     92"),
+  tips:["Load a file: <code class='i'>df = pd.read_csv(\"data.csv\")</code> (also <code class='i'>read_excel</code>); save with <code class='i'>df.to_csv(\"out.csv\", index=False)</code>.","Quick look: <code class='i'>df.head()</code>, <code class='i'>df.info()</code>, <code class='i'>df.describe()</code>.","Group &amp; summarize: <code class='i'>df.groupby(\"class\")[\"marks\"].mean()</code>.","Missing data: <code class='i'>df.isna().sum()</code>, <code class='i'>df.dropna()</code>, <code class='i'>df.fillna(0)</code>.","A single column (<code class='i'>df[\"marks\"]</code>) is a <b>Series</b>.","Add a column: <code class='i'>df[\"pass\"] = df[\"marks\"] &gt;= 40</code>."]},
+ matplotlib:{
+  keys:["matplotlib","plot","plotting","chart","graph","pyplot","visualization","visualisation","seaborn"],
+  title:"Matplotlib (Charts)",
+  text:"<b>Matplotlib</b> draws graphs and charts. Install: <code class='i'>pip install matplotlib</code>. It works nicely with NumPy and Pandas.",
+  ex:code(`import numpy as np\nimport matplotlib.pyplot as plt\n\nx = np.linspace(0, 2 * np.pi, 100)\nplt.plot(x, np.sin(x), label="sin(x)")\nplt.title("Sine wave")\nplt.xlabel("x")\nplt.ylabel("y")\nplt.legend()\nplt.show()`,"(a window opens showing a sine curve)"),
+  tips:["Other charts: <code class='i'>plt.bar</code>, <code class='i'>plt.hist</code>, <code class='i'>plt.scatter</code>, <code class='i'>plt.pie</code>.","Save instead of show: <code class='i'>plt.savefig(\"chart.png\")</code>.","With Pandas: <code class='i'>df[\"marks\"].plot(kind=\"bar\")</code>."]}
+};
+
+const ERRORS = [
+ ["SyntaxError","Python can't understand the code's structure — often a missing colon, bracket or quote.","if x == 5\n    print(x)   # missing ':'"],
+ ["IndentationError","Block lines don't line up. Use 4 spaces consistently.","def f():\nprint('hi')  # not indented"],
+ ["NameError","You used a variable/function that doesn't exist yet (or typo).","print(totl)  # meant total"],
+ ["TypeError","Wrong type for an operation, e.g. adding text and number.","'age: ' + 20  # use str(20) or f-string"],
+ ["IndexError","List index is out of range.","a=[1,2,3]; a[3]  # last is a[2]"],
+ ["KeyError","Dictionary key doesn't exist. Use .get().","d={'a':1}; d['b']"],
+ ["ValueError","Right type, wrong value, e.g. int('abc').","int('abc')"],
+ ["ZeroDivisionError","Dividing by zero.","10 / 0"]
+];
+
+const QUIZ = [
+ {q:"What is the output of <code class='i'>print(type(3.0))</code>?",o:["int","float","str","double"],a:1,e:"3.0 has a decimal point so it is a float."},
+ {q:"Which keyword defines a function?",o:["func","function","def","define"],a:2,e:"Functions are created with def."},
+ {q:"What does <code class='i'>len([4,5,6])</code> return?",o:["2","3","4","6"],a:1,e:"The list has 3 items."},
+ {q:"What is <code class='i'>[1,2,3,4][1:3]</code>?",o:["[1,2,3]","[2,3]","[2,3,4]","[1,2]"],a:1,e:"Slicing starts at index 1 and stops before 3."},
+ {q:"Which creates a dictionary?",o:["[1,2]","(1,2)","{'a':1}","<a:1>"],a:2,e:"Curly braces with key:value pairs."},
+ {q:"What is <code class='i'>range(3)</code> producing?",o:["1,2,3","0,1,2","0,1,2,3","1,2"],a:1,e:"range(3) starts at 0 and stops before 3."},
+ {q:"What does <code class='i'>10 // 3</code> give?",o:["3.33","3","4","1"],a:1,e:"// is floor (integer) division."},
+ {q:"Which statement handles errors?",o:["try/except","catch/throw","error/handle","if/error"],a:0,e:"Python uses try/except."},
+ {q:"What is <code class='i'>'Hi' * 3</code>?",o:["Error","HiHiHi","Hi 3","9"],a:1,e:"Strings can be repeated with *."},
+ {q:"What does <code class='i'>bool(0)</code> return?",o:["True","False","0","None"],a:1,e:"0 is falsy."},
+ {q:"Which library is used for fast numerical arrays?",o:["pandas","NumPy","json","random"],a:1,e:"NumPy provides the ndarray for fast numerical work."},
+ {q:"What does <code class='i'>np.array([1,2,3]) * 2</code> give?",o:["[1,2,3,1,2,3]","[2 4 6]","Error","[1,2,3,2]"],a:1,e:"NumPy multiplies every element (vectorization)."},
+ {q:"What is the main table-like object in pandas?",o:["Array","DataFrame","Tuple","Matrix"],a:1,e:"A DataFrame holds rows and columns."},
+ {q:"Which pandas function loads a CSV file?",o:["pd.open_csv()","pd.load()","pd.read_csv()","pd.csv()"],a:2,e:"pd.read_csv('file.csv') returns a DataFrame."},
+ {q:"What does <code class='i'>df.head()</code> show?",o:["Last 5 rows","First 5 rows","Column names only","Summary statistics"],a:1,e:"head() shows the first 5 rows by default."},
+ {q:"What does <code class='i'>[x*x for x in range(3)]</code> give?",o:["[0, 1, 4]","[1, 4, 9]","[0, 1, 2]","[0, 2, 4]"],a:0,e:"range(3) is 0,1,2 and each is squared."},
+ {q:"What is a recursive function's stopping condition called?",o:["Exit loop","Base case","Return value","Terminator"],a:1,e:"The base case ends the recursion."},
+ {q:"Which keyword makes a function a generator?",o:["return","yield","generate","next"],a:1,e:"yield produces values one at a time."},
+ {q:"What does <code class='i'>{1,2,2,3}</code> contain?",o:["{1,2,2,3}","{1,2,3}","[1,2,3]","Error"],a:1,e:"Sets keep only unique items."},
+ {q:"What does <code class='i'>list(map(lambda x: x+1, [1,2]))</code> return?",o:["[1,2]","[2,3]","[3,4]","[1,3]"],a:1,e:"Each element gets +1."}
+];
+
+const PROBLEMS = [
+ {t:"Even or Odd",d:"Ask the user for a number and print whether it is even or odd.",hint:"Use the remainder operator <code class='i'>%</code>.",sol:`n = int(input("Number: "))\nif n % 2 == 0:\n    print("Even")\nelse:\n    print("Odd")`},
+ {t:"Sum of 1 to N",d:"Print the sum of all numbers from 1 to N.",hint:"Loop with <code class='i'>range(1, n+1)</code> and keep a running total.",sol:`n = int(input("N: "))\ntotal = 0\nfor i in range(1, n+1):\n    total += i\nprint(total)`},
+ {t:"Reverse a String",d:"Reverse a word typed by the user.",hint:"Slicing with a step of -1.",sol:`w = input("Word: ")\nprint(w[::-1])`},
+ {t:"Factorial Function",d:"Write a function <code class='i'>factorial(n)</code>.",hint:"Multiply numbers from 1 to n.",sol:`def factorial(n):\n    result = 1\n    for i in range(2, n+1):\n        result *= i\n    return result\n\nprint(factorial(5))`},
+ {t:"Count Vowels",d:"Count how many vowels are in a sentence.",hint:"Loop through characters and test <code class='i'>ch in 'aeiou'</code>.",sol:`s = input("Text: ").lower()\ncount = 0\nfor ch in s:\n    if ch in "aeiou":\n        count += 1\nprint(count)`},
+ {t:"Word Frequency",d:"Count how often each word appears in a sentence.",hint:"Use <code class='i'>split()</code> and a dictionary.",sol:`text = input("Text: ").lower().split()\nfreq = {}\nfor w in text:\n    freq[w] = freq.get(w, 0) + 1\nprint(freq)`},
+ {t:"NumPy: Mean & Standard Deviation",d:"Given marks = [70, 85, 90, 60, 95], use NumPy to print the mean, maximum and standard deviation.",hint:"Make an array with <code class='i'>np.array</code>, then use <code class='i'>.mean()</code>, <code class='i'>.max()</code>, <code class='i'>.std()</code>.",sol:`import numpy as np\n\nmarks = np.array([70, 85, 90, 60, 95])\nprint(marks.mean())\nprint(marks.max())\nprint(marks.std())`},
+ {t:"Pandas: Top Student",d:"Create a DataFrame with names and marks of 4 students and print the student with the highest marks.",hint:"Use <code class='i'>sort_values</code> with <code class='i'>ascending=False</code> and <code class='i'>head(1)</code>, or <code class='i'>idxmax()</code>.",sol:`import pandas as pd\n\ndf = pd.DataFrame({\n    "name": ["Ali", "Sara", "Hina", "Zain"],\n    "marks": [78, 92, 85, 66]\n})\nprint(df.loc[df["marks"].idxmax()])`},
+ {t:"List Comprehension",d:"From numbers 1 to 20, create a list of the squares of only the odd numbers.",hint:"Add an <code class='i'>if x % 2 == 1</code> condition at the end of the comprehension.",sol:`odd_squares = [x*x for x in range(1, 21) if x % 2 == 1]\nprint(odd_squares)`},
+ {t:"Recursive Sum",d:"Write a recursive function that returns the sum of digits of a number (e.g. 1234 → 10).",hint:"Base case: n &lt; 10. Otherwise add the last digit <code class='i'>n % 10</code> to the sum of <code class='i'>n // 10</code>.",sol:`def digit_sum(n):\n    if n < 10:\n        return n\n    return n % 10 + digit_sum(n // 10)\n\nprint(digit_sum(1234))`}
+];
+
+/* ===================== HELPERS ===================== */
+const chat = document.getElementById("chat");
+const input = document.getElementById("input");
+let quizIdx = 0, quizScore = 0, quizOrder = [], lastProblem = null, lastTopic = null;
+
+function scroll(){ chat.scrollTop = chat.scrollHeight; }
+function addUser(t){ const d=document.createElement("div"); d.className="msg user"; d.textContent=t; chat.appendChild(d); scroll(); }
+function addBot(html){ const d=document.createElement("div"); d.className="msg bot"; d.innerHTML=html; chat.appendChild(d); scroll(); return d; }
+function codeBox(src,out){
+  const id="c"+Math.random().toString(36).slice(2,8);
+  return `<div class="codebox"><div class="bar"><span>python</span><span><button onclick="copyCode('${id}')">Copy</button></span></div><pre id="${id}">${esc(src)}</pre>${out?`<div class="out">▶ Output\n${esc(out)}</div>`:""}</div>`;
+}
+window.copyCode = id => { navigator.clipboard?.writeText(document.getElementById(id).innerText); };
+function reply(html, delay=450){
+  const t = addBot('<div class="typing"><span></span><span></span><span></span></div>');
+  setTimeout(()=>{ t.innerHTML = html; scroll(); }, delay);
+  return t;
+}
+function topicHTML(t){
+  return `<h4>${t.title}</h4><p>${t.text}</p>${codeBox(t.ex.code,t.ex.out)}<b>Key points</b><ul>${t.tips.map(x=>`<li>${x}</li>`).join("")}</ul><p>Want a <a href="#" onclick="ask('Give me a quiz');return false" style="color:var(--gold)">quiz</a> or a <a href="#" onclick="ask('Give me a practice problem');return false" style="color:var(--gold)">practice problem</a>?</p>`;
+}
+window.ask = q => { addUser(q); respond(q); };
+
+/* ===================== QUIZ ===================== */
+function startQuiz(){
+  quizOrder = [...QUIZ.keys()].sort(()=>Math.random()-.5).slice(0,5);
+  quizIdx = 0; quizScore = 0;
+  reply("<h4>Python Quiz 🧠</h4><p>5 questions. Pick the best answer.</p>");
+  setTimeout(showQ, 700);
+}
+function showQ(){
+  const q = QUIZ[quizOrder[quizIdx]];
+  const box = addBot(`<b>Q${quizIdx+1}/5.</b> ${q.q}<div class="opts">${q.o.map((o,i)=>`<button class="opt" data-i="${i}">${esc(o)}</button>`).join("")}</div>`);
+  box.querySelectorAll(".opt").forEach(b=>b.onclick=()=>{
+    const i=+b.dataset.i; box.querySelectorAll(".opt").forEach(x=>x.disabled=true);
+    box.querySelectorAll(".opt")[q.a].classList.add("ok");
+    if(i===q.a){quizScore++;} else b.classList.add("bad");
+    const fb=document.createElement("p"); fb.innerHTML=(i===q.a?"✅ Correct! ":"❌ Not quite. ")+q.e; box.appendChild(fb);
+    quizIdx++;
+    setTimeout(()=>{
+      if(quizIdx<5) showQ();
+      else reply(`<h4>Quiz finished</h4><p>You scored <b>${quizScore}/5</b>. ${quizScore>=4?"Excellent work!":quizScore>=2?"Good effort — review the topics you missed.":"Keep practising, you'll get there!"}</p><p>Type “quiz” to try new questions.</p>`,300);
+    },900);
+  });
+  scroll();
+}
+
+/* ===================== CODE EXPLAINER ===================== */
+function explainCode(src){
+  const lines = src.split("\n").filter(l=>l.trim());
+  const notes = [];
+  lines.forEach((l,i)=>{
+    const t=l.trim(); let n="";
+    if(/^def\s+(\w+)\((.*)\)/.test(t)){const m=t.match(/^def\s+(\w+)\((.*)\)/);n=`Defines a function <code class='i'>${m[1]}</code>${m[2]?` taking <code class='i'>${esc(m[2])}</code>`:""}.`;}
+    else if(/^class\s+(\w+)/.test(t)) n=`Defines a class <code class='i'>${t.match(/^class\s+(\w+)/)[1]}</code> (a blueprint for objects).`;
+    else if(/^for\s/.test(t)) n="Starts a <b>for</b> loop that repeats the indented block for each item.";
+    else if(/^while\s/.test(t)) n="Starts a <b>while</b> loop that repeats while the condition is true.";
+    else if(/^if\s/.test(t)) n="Checks a condition; the indented block runs only if it is true.";
+    else if(/^elif\s/.test(t)) n="Another condition checked if the previous ones were false.";
+    else if(/^else\s*:/.test(t)) n="Runs when none of the above conditions were true.";
+    else if(/^try\s*:/.test(t)) n="Begins a block where errors will be caught.";
+    else if(/^except/.test(t)) n="Handles an error from the <code class='i'>try</code> block.";
+    else if(/^import\s|^from\s.+import/.test(t)) n="Imports a module so its tools can be used.";
+    else if(/^return\b/.test(t)) n="Sends a value back from the function.";
+    else if(/input\(/.test(t)) n="Reads text typed by the user.";
+    else if(/^print\(/.test(t)) n="Displays output on the screen.";
+    else if(/^with\s+open/.test(t)) n="Opens a file safely; it closes automatically afterwards.";
+    else if(/^\w+(\[.*\])?\s*[+\-*/]?=\s*/.test(t)) n="Assigns a value to a variable.";
+    else if(/\.append\(/.test(t)) n="Adds an item to the end of a list.";
+    if(n) notes.push(`<li><code class='i'>${esc(t.length>50?t.slice(0,50)+"…":t)}</code> — ${n}</li>`);
+  });
+  return `<h4>Code walkthrough</h4>${codeBox(src)}${notes.length?`<ol>${notes.join("")}</ol>`:"<p>I couldn't recognise common patterns here. Try a smaller snippet.</p>"}<p><i>Note: I read code line by line, I don't run it. Ask “common errors” if you got an error message.</i></p>`;
+}
+
+/* ===================== ROUTER ===================== */
+function match(q){
+  const w = q.toLowerCase();
+  let best=null,score=0;
+  for(const k in TOPICS){
+    let s=0;
+    TOPICS[k].keys.forEach(key=>{ const re=new RegExp("(^|[^a-z])"+key.replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"s?([^a-z]|$)"); if(re.test(w)) s += key.length>3?2:1; });
+    if(s>score){score=s;best=k;}
+  }
+  return score>0?best:null;
+}
+function respond(q){
+  const w=q.toLowerCase().trim();
+  // pasted code
+  if(/\n/.test(q) && /(def |print\(|for |while |if |import |class )/.test(q) || /^(explain|what does).*(code|this)/.test(w) && /\n/.test(q)){
+    return reply(explainCode(q.replace(/^(explain|what does)[^\n]*\n/i,"")));
+  }
+  if(/^(hi|hello|hey|salam|assalam)\b/.test(w)) return reply("<h4>Hello! 👋</h4><p>I'm your Python tutor. Ask me about any concept, paste code for a line-by-line explanation, or ask for a quiz.</p>");
+  if(/thank|shukriya/.test(w)) return reply("You're welcome! Keep coding. 🐍");
+  if(/quiz|test me|mcq/.test(w)) return startQuiz();
+  if(/practice|problem|exercise|challenge/.test(w)){
+    const p = PROBLEMS[Math.floor(Math.random()*PROBLEMS.length)]; lastProblem=p;
+    return reply(`<h4>Practice: ${p.t}</h4><p>${p.d}</p><div class="opts"><button class="opt" onclick="ask('Hint')">Hint</button><button class="opt" onclick="ask('Show solution')">Show solution</button><button class="opt" onclick="ask('Give me a practice problem')">Another problem</button></div>`);
+  }
+  if(/^hint/.test(w)) return reply(lastProblem?`<b>Hint:</b> ${lastProblem.hint}`:"Ask for a practice problem first.");
+  if(/solution|answer/.test(w) && lastProblem) return reply(`<h4>Solution: ${lastProblem.t}</h4>${codeBox(lastProblem.sol)}<p>Try writing it yourself first next time, then compare.</p>`);
+  if(/study plan|\bplan\b|roadmap|schedule|where to start|syllabus/.test(w)) return reply(`<h4>6-Week Python Study Plan</h4><ol>
+   <li><b>Week 1:</b> Variables, data types, input/output, if/else.</li>
+   <li><b>Week 2:</b> Loops, strings, lists. Solve 3 small problems daily.</li>
+   <li><b>Week 3:</b> Functions, dictionaries, file handling, error handling.</li>
+   <li><b>Week 4:</b> Classes &amp; OOP, then build a mini project (e.g., a to-do list or grade calculator).</li>
+   <li><b>Week 5:</b> Comprehensions, lambda/map/filter, modules, JSON, recursion, decorators and generators.</li>
+   <li><b>Week 6:</b> Data science: NumPy arrays, Pandas DataFrames and Matplotlib charts. Finish with a mini analysis of a CSV file.</li></ol>
+   <p>Tip: 45 minutes of daily practice beats one long weekly session.</p>`);
+  if(/\berrors?\b|traceback|\bbug\b|not working/.test(w) && !/handling|try|except/.test(w)){
+    const hit = ERRORS.find(e=>w.includes(e[0].toLowerCase()));
+    const list = hit?[hit]:ERRORS;
+    return reply(`<h4>${hit?hit[0]:"Common Python Errors"}</h4>${list.map(e=>`<p><b>${e[0]}</b> — ${e[1]}</p>${codeBox(e[2])}`).join("")}${hit?"":"<p>Paste the exact error name and I'll explain it.</p>"}`);
+  }
+  for(const e of ERRORS) if(w.includes(e[0].toLowerCase())) return reply(`<h4>${e[0]}</h4><p>${e[1]}</p>${codeBox(e[2])}`);
+  if(/(difference|vs|versus).*(list|tuple)|(list|tuple).*(vs|difference)/.test(w)) return reply("<h4>List vs Tuple</h4><ul><li><b>List</b> <code class='i'>[1,2]</code> — changeable (mutable).</li><li><b>Tuple</b> <code class='i'>(1,2)</code> — fixed (immutable), slightly faster, can be a dictionary key.</li></ul>");
+  if(/what is python|about python|why python/.test(w)) return reply("<h4>What is Python?</h4><p>Python is a beginner-friendly, high-level programming language known for readable code. It is used in data science, web development, automation, AI and more.</p>"+codeBox('print("Hello, World!")',"Hello, World!"));
+  if(/hello world|first program/.test(w)) return reply("<h4>Your first program</h4>"+codeBox('print("Hello, World!")',"Hello, World!")+"<p><code class='i'>print()</code> shows text on screen.</p>");
+  if(/input|user input/.test(w)) return reply("<h4>Taking input</h4><p><code class='i'>input()</code> always returns text, so convert it when you need a number.</p>"+codeBox('age = int(input("Age: "))\nprint("Next year you will be", age + 1)'));
+  if(/\bprime\b/.test(w)) return reply("<h4>Prime number check</h4>"+codeBox('def is_prime(n):\n    if n < 2:\n        return False\n    for i in range(2, int(n**0.5)+1):\n        if n % i == 0:\n            return False\n    return True\n\nprint(is_prime(17))',"True")+"<p>We only test divisors up to √n because larger factors pair with smaller ones.</p>");
+  if(/fibonacci/.test(w)) return reply("<h4>Fibonacci</h4>"+codeBox('a, b = 0, 1\nfor _ in range(8):\n    print(a, end=" ")\n    a, b = b, a + b',"0 1 1 2 3 5 8 13"));
+  const k = match(q);
+  if(k){ lastTopic=k; return reply(topicHTML(TOPICS[k])); }
+  reply(`<h4>I'm not sure what you mean yet</h4><p>I'd rather ask than guess. Could you tell me which topic you want?</p><div class="opts">${["Variables","Loops","Functions","Lists","Dictionaries","Classes"].map(x=>`<button class="opt" onclick="ask('Explain ${x.toLowerCase()}')">${x}</button>`).join("")}</div><p>You can also paste code and I'll walk through it.</p>`);
+}
+
+/* ===================== UI WIRING ===================== */
+function send(){
+  const v=input.value.trim(); if(!v) return;
+  addUser(v); input.value=""; input.style.height="auto"; respond(v);
+}
+document.getElementById("send").addEventListener("click",send);
+input.addEventListener("keydown",e=>{ if(e.key==="Enter"&&!e.shiftKey&&!e.isComposing){e.preventDefault();send();} });
+input.addEventListener("input",()=>{input.style.height="auto";input.style.height=Math.min(input.scrollHeight,140)+"px";});
+document.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{ addUser(c.dataset.q); respond(c.dataset.q); document.getElementById("side").classList.remove("open"); });
+document.getElementById("menu").onclick=()=>document.getElementById("side").classList.toggle("open");
+document.getElementById("clear").onclick=()=>{chat.innerHTML=""; welcome();};
+document.addEventListener("click",e=>{ const s=document.getElementById("side"); if(s.classList.contains("open") && !s.contains(e.target) && e.target.id!=="menu") s.classList.remove("open"); });
+
+function welcome(){
+  addBot(`<h4>Welcome to Python Tutor AI 🐍</h4><p>I can explain Python concepts, including NumPy, Pandas and Matplotlib, with examples, walk through code you paste, give quizzes and practice problems, and build a study plan.</p><div class="opts">
+   <button class="opt" onclick="ask('Explain variables')">Start with variables</button>
+   <button class="opt" onclick="ask('Give me a quiz')">Take a quiz</button>
+   <button class="opt" onclick="ask('Give me a practice problem')">Practice problem</button>
+   <button class="opt" onclick="ask('Study plan')">Study plan</button></div>`);
+}
+welcome();
+</script>
+</body>
+</html>
